@@ -45,7 +45,6 @@ func calculateClosenessFromRawBytes(imageBytes1, imageBytes2 []byte) float64 {
 
 	closeness := float64(numberOfMatchingPixels) / float64(len(imageBytes1) / 3)
 
-	//todo Round to 2dp
 	return math.Floor(closeness*100)/100
 
 }
@@ -62,6 +61,5 @@ func calculateClosenessFromPixels(pixels1, pixels2 [][]byte) float64 {
 	closeness := float64(numberOfMatchingPixels) / float64(len(pixels1))
 
 	return math.Floor(closeness*100)/100
-
 }
 

@@ -104,3 +104,5 @@ func TestCalculateClosenessFromPixels_RoundsTo2dp(t *testing.T) {
 
 
 
+
+
