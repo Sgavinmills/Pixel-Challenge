@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
+	"log"
 	"strings"
 )
 
@@ -65,11 +66,11 @@ func calculateClosenessFromPixels(pixels1, pixels2 [][]byte) float64 {
 	return closeness
 }
 
-type Image struct {
-	ImageBytes []byte
-	Name string
-	Closeness float64
-}
+// type Image struct {
+// 	ImageBytes []byte
+// 	Name string
+// 	Closeness float64
+// }
 
 // make a go routine version of this. 
 func ReadFilesIntoBytes(files []fs.FileInfo, referenceImage string, directory string) []Image {
@@ -97,6 +98,28 @@ func CalculateClosenessForAllImages(referenceImage []byte, comparisonImages []Im
 			counter <- struct{}{}
 
 		}(i, v)
+	}
+}
+
+type Image struct {
+	Name string
+	Closeness float64
+	ImageBytes []byte
+}
+func ImageReader(files []fs.FileInfo, referenceImage string, referenceImageBytes []byte, directory string, imagesProcessedCounter chan Image) {
+	for _, file := range files {
+		fileName := file.Name()
+		if strings.HasSuffix(fileName, ".raw") && fileName != referenceImage {
+			go func(file, directory string){
+				imageBytes, err := GetImageBytes(directory + file)
+				if err != nil {
+					log.Println(err)
+				}
+				closeness := CalculateClosenessFromRawBytes(referenceImageBytes, imageBytes)
+				imagesProcessedCounter <- Image{Name: file, Closeness: closeness}
+			}(fileName, directory)
+		}
+		
 	}
 }
 
