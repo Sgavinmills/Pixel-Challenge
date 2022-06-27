@@ -1,58 +1,79 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
-	"strings"
+	"os"
+	"sort"
+
+	"github.com/Sgavinmills/Pixel-Challenge/main/imagereader"
 )
 
-type imageInfo struct {
-	name        string
-	imageBytes  []byte
-	imagePixels [][]byte
-	closeness   float64
-}
-
-
-type imageStorage struct {
-	comparisonImages map[string]imageInfo
-	referenceImage imageInfo
-}
+// type image struct {
+// 	imageBytes []byte
+// 	name string
+// 	closeness float64
+// }
 
 func main() {
 
-	var imageStorage imageStorage
-	imageStorage.comparisonImages = make(map[string]imageInfo)
-	// TODO, get suffix from the reference image instead of hard coding .raw
-	referenceImage := "0f0e5c84-3b99-4874-bb8c-e0228155c4b5.raw"
-	directory := "Images\\Bronze\\"
+	refImgPtr := flag.String("ref", "", "Name of image")
+	dirPtr := flag.String("dir", "Bronze", "Which image level to use")
+	flag.Parse()
 
-	imageStorage.getFilesFromDirectory(directory, referenceImage)
-
-	// take reference image and image directory as parameters
-
-	// convert reference image to bytes
-	// convert all the other images that aren't the reference images to bytes, store separately
-
-	// loop over the other images calculating closeness score to reference image
-
-	// return the images with the 3 highest closeness scores
-}
-
-func (store imageStorage) getFilesFromDirectory(directory string, referenceImage string) error {
+	directory := "Images\\"+*dirPtr+"\\"
+	referenceImage := *refImgPtr
+	
 	files, err := ioutil.ReadDir(directory)
+	
+	// if not ref image provided we take first one from directory instead
+	if referenceImage == "" {
+		referenceImage = files[0].Name()
+	}
+	
+	fmt.Printf("Comparing image %v against images in %v\n", referenceImage, directory)
+	
+	// get referenceimage bytes
+	referenceImageBytes, err := imagereader.GetImageBytes(directory+referenceImage)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		os.Exit(1)
 	}
+	
+	
+	comparisonImages := imagereader.ReadFilesIntoBytes(files, referenceImage, directory)
+	// doesnt work atm, need to wait until finished reading before moving on... but...
+	// could still bench mark / test the other function to check for race issues and improvements. 
 
-	for _, file := range files {
-		fileName := file.Name()
-		if strings.HasSuffix(fileName, ".raw") && fileName != referenceImage {
-			newImage := imageInfo{name: fileName}
-			store.comparisonImages[fileName] = newImage
-		}
+	
+	
+	// resultCounter := imagereader.NewCounter(10)
+
+
+	testCounter := make(chan struct{})
+	// imagereader.StartResultsWatcher(resultCounter)
+	imagereader.CalculateClosenessForAllImages(referenceImageBytes, comparisonImages, testCounter)
+
+
+
+
+	// sort comparisonImages to get winning order
+	// might want to look into faster sorting algorithm OR only populate array with contenders in the first place, ie never allow more than 3 
+	// basically check if there are more than 3 already stored, if so enter it in order and delete the slowest
+	// time.Sleep(time.Second * 5)
+	
+	for i := 0; i < 9; i++ {
+		<- testCounter
 	}
-
-	return nil
+	// print top 3. Might need to add some checking to see that there are no ties.
+	sort.Slice(comparisonImages, func(i, j int) bool {
+		return comparisonImages[i].Closeness > comparisonImages[j].Closeness
+	})
+	fmt.Printf("Image %v is 1st with a closeness score of: %v\n", comparisonImages[0].Name, comparisonImages[0].Closeness)
+	fmt.Printf("Image %v is 2nd with a closeness score of: %v\n", comparisonImages[1].Name, comparisonImages[1].Closeness)
+	fmt.Printf("Image %v is 3rd with a closeness score of: %v\n", comparisonImages[2].Name, comparisonImages[2].Closeness)
 }
+
+
+
