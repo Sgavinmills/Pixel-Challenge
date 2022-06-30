@@ -16,7 +16,7 @@ To compare images in a sub directory Silver against a default reference image th
 
     go run main.go -dir Silver
 
-To compare images in a sub directory Gold/GoldImages against a speciric image then use
+To compare images in a sub directory Gold against a specific image then use
 
     go run main.go -dir Gold -ref 0aeb3950-8d36-4c29-be82-8bcdc82eb216.raw
 
