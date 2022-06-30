@@ -43,6 +43,7 @@ func FindClosestImagesToReference(files []fs.FileInfo, referenceInfo Reference) 
 }
 
 func calculateCloseness(files []fs.FileInfo, referenceInfo Reference, processedImage chan Image) {
+	
 	for _, file := range files {
 		fileName := file.Name()
 
@@ -50,7 +51,7 @@ func calculateCloseness(files []fs.FileInfo, referenceInfo Reference, processedI
 			if !strings.HasSuffix(fileName, ".raw") {
 				processedImage <- Image{Name: "invalid file", Closeness: 0}
 			}
-
+			
 			go func(file, directory string){
 				imageBytes, err := GetImageBytes(directory + file)
 				if err != nil {
