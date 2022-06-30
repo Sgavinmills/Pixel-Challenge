@@ -1,15 +1,17 @@
 package imagereader
 
 import (
+	"fmt"
 	"io/ioutil"
+	"os"
 	"reflect"
 	"testing"
 )
 
 var sourceFiles []string = []string{
 	
-	"..\\Images\\Bronze\\1d25ea94-4562-4e19-848e-b60f1b58deee.raw",
-	"..\\Images\\Bronze\\6c9952ef-e5bf-4de2-817b-fd0073be8449.raw",
+	"testdata\\Bronze\\1d25ea94-4562-4e19-848e-b60f1b58deee.raw",
+	"testdate\\Bronze\\6c9952ef-e5bf-4de2-817b-fd0073be8449.raw",
 }
 
 func TestGetImageBytes(t *testing.T) {
@@ -44,16 +46,33 @@ func TestConvertBytesToPixels(t *testing.T) {
 	}
 }
 
-func BenchmarkConvertBytesToPixels(b *testing.B) {
-	testBytes, _ := GetImageBytes(sourceFiles[0])
 
-	for i := 0; i < b.N; i++ {
-		convertBytesToPixels(testBytes)
+func TestCreateSubSlices(t *testing.T) {
+	testBytes1 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 0, 6, 54, 34}
+	testBytes2 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 7, 6, 2, 34}
+
+	result1, result2, _ := createSubSlices(testBytes1, testBytes2, 4)
+	expectedResult1 := [][]byte{{144, 144, 131},{255,255,255},{0,0,0},{6,54,34}}
+	expectedResult2 := [][]byte{{144, 144, 131},{255,255,255},{0,0,7},{6,2,34}}
+
+	if !reflect.DeepEqual(result1, expectedResult1) {
+		t.Error("Expected", expectedResult1, "Got ", result1)
+	}
+	if !reflect.DeepEqual(result2, expectedResult2) {
+		t.Error("Expected", expectedResult2, "Got ", result2)
 	}
 }
 
+func TestCreateSubSlices_InvalidSubSliceAmount(t *testing.T) {
+testBytes1 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 0, 6, 54, 34}
+testBytes2 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 7, 6, 2, 34}
 
-// more tests for this one - inc edgecases n that. return errors if appropriate
+_, _, err := createSubSlices(testBytes1, testBytes2, 3)
+if err != ErrInvalidSubsliceValue {
+	t.Error("Expected ", ErrInvalidSubsliceValue, "Got ", err)
+}
+}
+
 func TestCalculateClosenessFromRawBytesWithGoRoutines(t *testing.T) {
 	testBytes1 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 0, 6, 54, 34}
 	testBytes2 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 7, 6, 2, 34}
@@ -68,58 +87,19 @@ func TestCalculateClosenessFromRawBytesWithGoRoutines(t *testing.T) {
 	}
 }
 
-func TestCreateSubSlices(t *testing.T) {
-		testBytes1 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 0, 6, 54, 34}
-    	testBytes2 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 7, 6, 2, 34}
 
-		result1, result2, _ := createSubSlices(testBytes1, testBytes2, 4)
-		expectedResult1 := [][]byte{{144, 144, 131},{255,255,255},{0,0,0},{6,54,34}}
-		expectedResult2 := [][]byte{{144, 144, 131},{255,255,255},{0,0,7},{6,2,34}}
-
-		if !reflect.DeepEqual(result1, expectedResult1) {
-			t.Error("Expected", expectedResult1, "Got ", result1)
-		}
-		if !reflect.DeepEqual(result2, expectedResult2) {
-			t.Error("Expected", expectedResult2, "Got ", result2)
-		}
-}
-
-func TestCreateSubSlices_InvalidSubSliceAmount(t *testing.T) {
+func TestCalculateClosenessFromRawBytesWithGoRoutines_DifferentSizeImages(t *testing.T) {
 	testBytes1 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 0, 6, 54, 34}
-	testBytes2 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 7, 6, 2, 34}
+	testBytes2 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 7}
 
-	_, _, err := createSubSlices(testBytes1, testBytes2, 3)
-	if err != ErrInvalidSubsliceValue {
-		t.Error("Expected ", ErrInvalidSubsliceValue, "Got ", err)
+	actualCloseness, _ := CalculateClosenessFromRawBytes(testBytes1, testBytes2)
+	expectedCloseness := 0.0
+
+	if actualCloseness != expectedCloseness {
+		t.Error("Expected ", expectedCloseness, "Got ", actualCloseness)
 	}
+
 }
-
-
-
-// func TestCalculateClosenessFromRawBytesWithGoRoutines_DifferentSizeImages(t *testing.T) {
-// 	testBytes1 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 0, 6, 54, 34}
-// 	testBytes2 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 7}
-
-// 	actualCloseness, _ := CalculateClosenessFromRawBytes(testBytes1, testBytes2)
-// 	expectedCloseness := 0.0
-
-// 	if actualCloseness != expectedCloseness {
-// 		t.Error("Expected ", expectedCloseness, "Got ", actualCloseness)
-// 	}
-
-// }
-
-// func TestCalculateClosenessFromRawBytesWithGoRoutines_ImageBytesLengthNotMultipleOfThree(t *testing.T) {
-// 	testBytes1 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 0, 6, 54}
-// 	testBytes2 := []byte{144, 144, 131, 255, 255, 255, 0, 0, 7, 6, 54}
-
-// 	_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2)
-
-// 	if err == nil {
-// 		t.Error("Expected error Got nil")
-// 	}
-
-// }
 
 
 func TestCalculateClosenessFromRawBytes(t *testing.T) {
@@ -158,30 +138,35 @@ func TestCalculateClosenessFromRawBytes_ImageBytesLengthNotMultipleOfThree(t *te
 	}
 
 }
-//need the same tests for calculateclosenessfromrawbyteswithchannels ^
 
-func BenchmarkCalculateClosenessFromRawBytes(b *testing.B) {
-	testBytes1, _ := GetImageBytes(sourceFiles[0])
-	testBytes2, _ := GetImageBytes(sourceFiles[1])
+func TestFindClosestImagesToReference(t *testing.T) {
 
-	for i := 0; i < b.N; i++ {
-		CalculateClosenessFromRawBytes(testBytes1, testBytes2)
+	referenceInfo := Reference{
+		Directory: "testdata\\Bronze\\",
+		RefImageName: "1d25ea94-4562-4e19-848e-b60f1b58deee.raw",
+	}
+	var err error
+	referenceInfo.RefImageBytes, err = GetImageBytes(referenceInfo.Directory+referenceInfo.RefImageName)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	
+	files, err := ioutil.ReadDir(referenceInfo.Directory)
+	results := FindClosestImagesToReference(files, referenceInfo)
+	
+	expectedResults := []string{
+		"4424fa5a-c00d-4cd5-8525-fcf921b09ca8.raw",
+		"e3c342e2-2429-4f47-8828-f7ee0703ad38.raw",
+		"6c9952ef-e5bf-4de2-817b-fd0073be8449.raw",
+	}
+
+	for i, v := range expectedResults {
+		if results[i].Name != v {
+			t.Error("Expected result ", i, " to be ", expectedResults[i], "Got ", results[i])
+		}
 	}
 }
-
-func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines(b *testing.B) {
-	testBytes1, _ := GetImageBytes(sourceFiles[0])
-	testBytes2, _ := GetImageBytes(sourceFiles[1])
-	numberOfSlices := 1024
-	for i := 0; i < b.N; i++ {
-		CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
-	}
-}
-
-
-
-
-
 
 
 func TestCalculateClosenessFromPixels(t *testing.T) {
@@ -208,139 +193,49 @@ func BenchmarkCalculateClosenessFromPixels(b *testing.B) {
 }
 
 
-
-// func TestReadFilesIntoBytes(t *testing.T) {
-// 	directory := "..\\Images\\Bronze\\"
-// 	files, err := ioutil.ReadDir(directory)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	referenceImage := "1d25ea94-4562-4e19-848e-b60f1b58deee.raw"
-// 	fmt.Println(files)
-// 	actualResults := ReadFilesIntoBytes(files, referenceImage, directory)
-// 	fmt.Println("xxxx")
-
-
-// 	for i, result := range actualResults {
-// 		if len(result.ImageBytes) != 3145728 {
-// 			t.Errorf("Expected length of result %v's imageBytes to be 3145728, Got: %v", i, len(result.ImageBytes) )
-// 		}
-// 	}
-
-// }
-
-
-
-
-// func BenchmarkReadFilesIntoBytes(b *testing.B) {
-// 	directory := "..\\Images\\Bronze\\"
-// 	files, err := ioutil.ReadDir(directory)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	referenceImage := "1d25ea94-4562-4e19-848e-b60f1b58deee.raw"
-// 	for i := 0; i < b.N; i++ {
-// 		ReadFilesIntoBytes(files, referenceImage, directory)
-// 	}
-
-// }
-
-// func BenchmarkCalculateClosenessForAllImages(b *testing.B) {
-// 	directory := "..\\Images\\Bronze\\"
-// 	files, err := ioutil.ReadDir(directory)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	referenceImage := "1d25ea94-4562-4e19-848e-b60f1b58deee.raw"
-// 	referenceImageBytes, _ := GetImageBytes(directory+referenceImage)
-// 	comparisonImages := ReadFilesIntoBytes(files, referenceImage, directory)
-
-// 	// fmt.Println(comparisonImages)
-// 	for i := 0; i < b.N; i++ {
-// 		CalculateClosenessForAllImages(referenceImageBytes, comparisonImages)
-// 	}
-// }
-
-//see what difference directorys make below
-func BenchmarkProcessImageFiles(b *testing.B) {
-	directory := "..\\Images\\Bronze\\"
-
-	files, err := ioutil.ReadDir(directory)
-	if err != nil {
-		b.Error("Problem reading files")
-	}
-	referenceImage := files[0].Name()
-	referenceImageBytes, err := GetImageBytes(directory+referenceImage)
-
-	referenceInfo := Reference{referenceImage, referenceImageBytes, directory}
+func BenchmarkConvertBytesToPixels(b *testing.B) {
+	testBytes, _ := GetImageBytes(sourceFiles[0])
 
 	for i := 0; i < b.N; i++ {
-		ProcessImageFiles(files, referenceInfo)
+		convertBytesToPixels(testBytes)
 	}
 }
 
-func BenchmarkProcessImageFiles_OnlyCompareTop3(b *testing.B) {
-	directory := "..\\Images\\Bronze\\"
-
-	files, err := ioutil.ReadDir(directory)
+func BenchmarkCalculateClosenessFromRawBytes(b *testing.B) {
+	testBytes1, err := GetImageBytes(sourceFiles[0])
 	if err != nil {
-		b.Error("Problem reading files")
+		fmt.Println(err)
 	}
-	referenceImage := files[0].Name()
-	referenceImageBytes, err := GetImageBytes(directory+referenceImage)
 
-	referenceInfo := Reference{referenceImage, referenceImageBytes, directory}
+	testBytes2, err := GetImageBytes(sourceFiles[1])
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	for i := 0; i < b.N; i++ {
-		FindClosestImagesToReference(files, referenceInfo)
+		_, err := CalculateClosenessFromRawBytes(testBytes1, testBytes2)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 
-func BenchmarkScanAndCompareImages(b *testing.B) {
-	directory := "..\\Images\\Bronze\\"
-
-	files, err := ioutil.ReadDir(directory)
+func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines(b *testing.B) {
+	testBytes1, err := GetImageBytes(sourceFiles[0])
 	if err != nil {
-		b.Error("Problem reading files")
+		fmt.Println(err)
 	}
-	referenceImage := files[0].Name()
-	referenceImageBytes, err := GetImageBytes(directory+referenceImage)
 
-	referenceInfo := Reference{referenceImage, referenceImageBytes, directory}
+	testBytes2, err := GetImageBytes(sourceFiles[1])
+	if err != nil {
+		fmt.Println(err)
+	}
 
-
+	numberOfSlices := 1024
 	for i := 0; i < b.N; i++ {
-		scanAndCompareImages(files, referenceInfo)
+		_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
-
-
-
-func BenchmarkSortImagesByCloseness(b *testing.B) {
-	directory := "..\\Images\\Bronze\\"
-
-	files, err := ioutil.ReadDir(directory)
-	if err != nil {
-		b.Error("Problem reading files")
-	}
-	referenceImage := files[0].Name()
-	referenceImageBytes, err := GetImageBytes(directory+referenceImage)
-
-	referenceInfo := Reference{referenceImage, referenceImageBytes, directory}
-	comparedImages := scanAndCompareImages(files, referenceInfo)
-
-	for i := 0; i < b.N; i++ {
-		sortImagesByCloseness(comparedImages)
-	}
-
-}
-
-
-
-
-
-
-
-
-
-
