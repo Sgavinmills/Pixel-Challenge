@@ -28,34 +28,34 @@ func CalculateClosenessForAllImages(referenceImage []byte, comparisonImages []Im
 	}
 }
 
-func updateLeaderBoardWithoutSort(comparedImages []Image, processedImage Image, maxNumberOfResults int) []Image {
+// func updateLeaderBoardWithoutSort(comparedImages []Image, processedImage Image, maxNumberOfResults int) []Image {
 
-	if len(comparedImages) >= maxNumberOfResults && processedImage.Closeness < comparedImages[len(comparedImages)-1].Closeness {
-		return comparedImages
-	}
+// 	if len(comparedImages) >= maxNumberOfResults && processedImage.Closeness < comparedImages[len(comparedImages)-1].Closeness {
+// 		return comparedImages
+// 	}
 
-	if len(comparedImages) == 0 {
-		comparedImages = append(comparedImages, processedImage)
-		return comparedImages
-	}
+// 	if len(comparedImages) == 0 {
+// 		comparedImages = append(comparedImages, processedImage)
+// 		return comparedImages
+// 	}
 
-	for i, v := range comparedImages {
-		if processedImage.Closeness > v.Closeness {
-			newResults := append(comparedImages[:i+1], comparedImages[i:]...)
-			newResults[i] = processedImage
-			newResults = newResults[:len(newResults)-1]
-			return newResults
-		}
+// 	for i, v := range comparedImages {
+// 		if processedImage.Closeness > v.Closeness {
+// 			newResults := append(comparedImages[:i+1], comparedImages[i:]...)
+// 			newResults[i] = processedImage
+// 			newResults = newResults[:len(newResults)-1]
+// 			return newResults
+// 		}
 
-		if i == len(comparedImages) - 1 && len(comparedImages) < maxNumberOfResults {
-			comparedImages = append(comparedImages, processedImage)
-			return comparedImages
-		}
-	}
+// 		if i == len(comparedImages) - 1 && len(comparedImages) < maxNumberOfResults {
+// 			comparedImages = append(comparedImages, processedImage)
+// 			return comparedImages
+// 		}
+// 	}
 
-	return comparedImages
+// 	return comparedImages
 
-}
+// }
 
 func calculateClosenessFromPixels(pixels1, pixels2 [][]byte) float64 {
 	var numberOfMatchingPixels int

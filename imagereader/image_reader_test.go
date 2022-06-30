@@ -153,6 +153,9 @@ func TestFindClosestImagesToReference(t *testing.T) {
 	}
 	
 	files, err := ioutil.ReadDir(referenceInfo.Directory)
+	if err != nil {
+		t.Error(err)
+	}
 	results := FindClosestImagesToReference(files, referenceInfo)
 	
 	expectedResults := []string{

@@ -55,7 +55,10 @@ func setup() (imagereader.Reference, []fs.FileInfo) {
 	referenceInfo.RefImageName = *refImgPtr
 	
 	files, err := ioutil.ReadDir(referenceInfo.Directory)
-
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
 	if referenceInfo.RefImageName == "" {
 		referenceInfo.RefImageName = files[0].Name()
 	}
