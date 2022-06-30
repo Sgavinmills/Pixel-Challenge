@@ -16,11 +16,14 @@ import (
 )
 
 func main() {
-	start := time.Now()
+	// for pprof checking only
+	// var wg sync.WaitGroup
+
 	go func() {
 		log.Println(http.ListenAndServe(":6060", nil))
-	}()
+		}()
 		
+	start := time.Now()
 	referenceInfo, files := setup()
 
 	setupDuration := time.Since(start)
@@ -33,8 +36,10 @@ func main() {
 	fmt.Printf("Image %v is 3rd with a closeness score of: %v\n", imageResults[2].Name, imageResults[2].Closeness)
 
 	fullExecutionDuration := time.Since(start)
-	// time.Sleep(time.Second * 1000)
 	fmt.Printf("Program run in %v ", fullExecutionDuration)
+
+	// wg.Add(1)
+	// wg.Wait()
 
 }
 

@@ -11,7 +11,7 @@ import (
 var sourceFiles []string = []string{
 	
 	"testdata\\Bronze\\1d25ea94-4562-4e19-848e-b60f1b58deee.raw",
-	"testdate\\Bronze\\6c9952ef-e5bf-4de2-817b-fd0073be8449.raw",
+	"testdata\\Bronze\\6c9952ef-e5bf-4de2-817b-fd0073be8449.raw",
 }
 
 func TestGetImageBytes(t *testing.T) {
@@ -220,7 +220,7 @@ func BenchmarkCalculateClosenessFromRawBytes(b *testing.B) {
 	}
 }
 
-func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines(b *testing.B) {
+func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines_1024(b *testing.B) {
 	testBytes1, err := GetImageBytes(sourceFiles[0])
 	if err != nil {
 		fmt.Println(err)
@@ -232,6 +232,126 @@ func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines(b *testing.B) {
 	}
 
 	numberOfSlices := 1024
+	for i := 0; i < b.N; i++ {
+		_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines_512(b *testing.B) {
+	testBytes1, err := GetImageBytes(sourceFiles[0])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	testBytes2, err := GetImageBytes(sourceFiles[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	numberOfSlices := 512
+	for i := 0; i < b.N; i++ {
+		_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines_256(b *testing.B) {
+	testBytes1, err := GetImageBytes(sourceFiles[0])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	testBytes2, err := GetImageBytes(sourceFiles[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	numberOfSlices := 256
+	for i := 0; i < b.N; i++ {
+		_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines_128(b *testing.B) {
+	testBytes1, err := GetImageBytes(sourceFiles[0])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	testBytes2, err := GetImageBytes(sourceFiles[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	numberOfSlices := 128
+	for i := 0; i < b.N; i++ {
+		_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines_32(b *testing.B) {
+	testBytes1, err := GetImageBytes(sourceFiles[0])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	testBytes2, err := GetImageBytes(sourceFiles[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	numberOfSlices := 32
+	for i := 0; i < b.N; i++ {
+		_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines_16(b *testing.B) {
+	testBytes1, err := GetImageBytes(sourceFiles[0])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	testBytes2, err := GetImageBytes(sourceFiles[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	numberOfSlices := 16
+	for i := 0; i < b.N; i++ {
+		_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+func BenchmarkCalculateClosenessFromRawBytesWithGoRoutines_8(b *testing.B) {
+	testBytes1, err := GetImageBytes(sourceFiles[0])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	testBytes2, err := GetImageBytes(sourceFiles[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	numberOfSlices := 8
 	for i := 0; i < b.N; i++ {
 		_, err := CalculateClosenessFromRawBytesWithGoRoutines(testBytes1, testBytes2, numberOfSlices)
 		if err != nil {

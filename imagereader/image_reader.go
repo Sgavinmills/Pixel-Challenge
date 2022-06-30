@@ -64,7 +64,7 @@ func calculateCloseness(files []fs.FileInfo, referenceInfo Reference, processedI
 					return
 				}
 
-				numberOfSlices := 512
+				numberOfSlices := 16
 				closeness, err := CalculateClosenessFromRawBytesWithGoRoutines(referenceInfo.RefImageBytes, imageBytes, numberOfSlices)
 				// closeness, err := CalculateClosenessFromRawBytes(referenceInfo.RefImageBytes, imageBytes)
 				if err != nil {
