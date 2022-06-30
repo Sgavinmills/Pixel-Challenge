@@ -20,3 +20,6 @@ To compare images in a sub directory Gold/GoldImages against a speciric image th
 
     go run main.go -dir Gold -ref 0aeb3950-8d36-4c29-be82-8bcdc82eb216.raw
 
+Important: There must only be .raw images in the selected directory. Any other files will cause an error.
+
+TestData images have not been provided. Please copy the Bronze images folder into the testdata folder inside imagereader package.
